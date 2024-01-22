@@ -1,0 +1,20 @@
+- A full size page, divided in 3 divs, 
+- Each div contains the real-time transcript of a conversation between an Agent and a VoiceBot. 
+- Each div will have 2 buttons below: [Give instructions] and [Hijack call]
+- Each Div can have 2 states: Either it is an ONGOING chat or it is an WAITING-FOR-INSTRUCTIONS chat.
+- When WAITING-FOR-INSTRUCTIONS, the div will call the attention of the Agent with a different color.
+- On the top, add a colorful logo "Hackathon 2024 Vegas - Team XYZ"
+
+-----
+
+- Make these 3 divs full height
+
+- Instead of saying "[Real-time transcript goes here]", add example of a Chat, including "Customer:" and "Bot:" headers to distinguish between them. Make the transcript example a big enough to show scroll bar.
+
+- For every new message into the transcript, make the scrollbar scroll down automatically, showing always the latest message.
+
+-----
+
+on the right side of this title, add the sentiment analysis of the customer, it can have 5 states: Very Negative, Negative, Neutral, Positve, Very Positive. Have a different color for each sentiment, in an gradient way. Do it in a way that the Agent who is looking this screen can clearly see the sentiment of the customer.
+
+https://v0.dev/r/yEQfXh7AaeP
