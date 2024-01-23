@@ -1,12 +1,21 @@
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 
-feSendMessage = (sender, text, interactionId) => {
+feSendCommand = (type, payload) => {
+  console.log(`(feSendCommand) ${type}: ${JSON.stringify(payload)}`);
+  wss.clients.forEach((ws) => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type, ...payload }));
+    }
+  });
+};
+
+feSendMessage = (CallSid, sender, text, interactionId) => {
   console.log(`(feSendMessage) ${sender}: ${text}`);
   wss.clients.forEach((ws) => {
     if (ws.readyState === WebSocket.OPEN) {
       //   console.log(`(feSendMessage) sending to id=${ws.id}...`);
-      ws.send(JSON.stringify({ sender, text, interactionId }));
+      ws.send(JSON.stringify({ type: 'new-msg', CallSid, sender, text, interactionId }));
     }
   });
 };
@@ -18,12 +27,7 @@ wss.on('connection', (ws) => {
   ws.id = ++id;
   console.log('New client connected', ws.id);
 
-  ws.send(
-    JSON.stringify({
-      sender: 'Status',
-      text: `You are connected :)`,
-    })
-  );
+  ws.send(JSON.stringify({ type: 'front-end-connected' }));
 
   //   ws.timer = setInterval(() => {
   //     console.log(`Sending message to ${ws.id}...`);

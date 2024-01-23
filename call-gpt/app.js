@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const ExpressWs = require('express-ws');
 const colors = require('colors');
 
@@ -9,27 +10,55 @@ const { TranscriptionService } = require('./services/transcription-service');
 const { TextToSpeechService } = require('./services/tts-service');
 
 const { feSendMessage } = require('./app-frontend-ws');
-// const { startFrontEndWs } = require('./app-frontend-ws');
 
 const app = express();
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 ExpressWs(app);
-// startFrontEndWs(app);
 
 const PORT = process.env.PORT || 3000;
 
+let callId = 0;
+const currentCalls = {};
+
 app.post('/incoming', (req, res) => {
+  const { From, CallSid, CallToken } = req.body;
+  console.log('New call: ', From, CallSid);
+
+  callId++;
+  currentCall = { CallSid, From, callId };
+  currentCalls[CallSid] = currentCall;
+
   res.status(200);
   res.type('text/xml');
+
+  if (callId > 2) {
+    return res.end(`
+    <Response>
+      <Say>
+        Sorry, for this Hachathon we only have 2 lines available. Bye!
+      </Say>
+    </Response>
+    `);
+  }
+
+  feSendCommand('call-started', currentCall);
+
   res.end(`
-  <Response>
-    <Connect>
-      <Stream url="wss://${process.env.SERVER}/connection" />
-    </Connect>
-  </Response>
+    <Response>
+      <Connect>
+        <Stream url="wss://${process.env.SERVER}/connection/${CallSid}" />
+      </Connect>
+    </Response>
   `);
 });
 
-app.ws('/connection', (ws, req) => {
+app.ws('/connection/:CallSid', (ws, req) => {
+  const { CallSid } = req.params;
+  const currentCall = currentCalls[CallSid];
+  const { From } = currentCall;
+  console.log(`New connection: ${From} - ${CallSid}`);
+
   ws.on('error', console.error);
   // Filled in from start message
   let streamSid;
@@ -48,7 +77,7 @@ app.ws('/connection', (ws, req) => {
     if (msg.event === 'start') {
       streamSid = msg.start.streamSid;
       const text = "Hello! I understand you're looking for a pair of AirPods, is that correct?";
-      feSendMessage('Bot', text);
+      feSendMessage(CallSid, 'Bot', text);
       streamService.setStreamSid(streamSid);
       console.log(`Twilio -> Starting Media Stream for ${streamSid}`.underline.red);
       ttsService.generate({ partialResponseIndex: null, partialResponse: text }, 1);
@@ -60,6 +89,10 @@ app.ws('/connection', (ws, req) => {
       marks = marks.filter((m) => m !== msg.mark.name);
     } else if (msg.event === 'stop') {
       console.log(`Twilio -> Media stream ${streamSid} ended.`.underline.red);
+
+      feSendCommand('call-ended', currentCall);
+      callId--;
+      delete currentCalls[CallSid];
     }
   });
 
@@ -81,14 +114,14 @@ app.ws('/connection', (ws, req) => {
       return;
     }
     console.log(`Interaction ${interactionCount} – STT -> GPT: ${text}`.yellow);
-    feSendMessage('Customer', text);
+    feSendMessage(CallSid, 'Customer', text);
     gptService.completion(text, interactionCount);
     interactionCount += 1;
   });
 
   gptService.on('gptreply', async (gptReply, icount) => {
     console.log(`Interaction ${icount}: GPT -> TTS: ${gptReply.partialResponse}`.green);
-    feSendMessage('Bot', gptReply.partialResponse, icount);
+    feSendMessage(CallSid, 'Bot', gptReply.partialResponse, icount);
     ttsService.generate(gptReply, icount);
   });
 
