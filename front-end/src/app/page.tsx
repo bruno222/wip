@@ -1,25 +1,39 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ChatMessage, { Message } from '@/components/chat-message';
 
 interface Call {
   CallSid: string;
   From: string;
-  callId: number;
+  callId: string;
 }
 
 interface AllCalls {
   [callSid: string]: Call;
 }
+
+interface MessageSocket extends Message {
+  type: string;
+  CallSid: string;
+  From: string;
+  callId: string;
+}
+
+let reRender = new Date();
+
 export default function Home() {
   const [messagesOne, setMessagesOne] = useState<Message[]>([]);
   const [messagesTwo, setMessagesTwo] = useState<Message[]>([]);
   // const [currentCalls, setCurrentCalls] = useState<AllCalls>({});
   const currentCalls: AllCalls = {};
-  const [status, setStatus] = useState<string>('disconnected');
 
-  function addMessage(callId: number, message: Message) {
-    const setMessage = callId === 1 ? setMessagesOne : setMessagesTwo;
+  const [status, setStatus] = useState<string>('disconnected');
+  const [chatWindow, setChatWindow] = useState<{ [chatId: string]: undefined | string }>({ '1': undefined, '2': undefined });
+
+  const socketRef = useRef<WebSocket | null>(null);
+
+  function addMessage(callId: string, message: Message) {
+    const setMessage = +callId === 1 ? setMessagesOne : setMessagesTwo;
     setMessage((prevMessages) => {
       console.log('@@@ prevMessages', prevMessages);
 
@@ -34,12 +48,21 @@ export default function Home() {
       return [...prevMessages, { ...message, text: message.text.replace('•', '').trim() }];
     });
   }
+
+  const sendMessageSocket = (callId: string) => (text: string) => {
+    const CallSid = chatWindow[callId];
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({ type: 'new-msg-from-supervisor', text, CallSid }));
+    }
+  };
+
   useEffect(() => {
     console.log('ws connecting...');
     const socket = new WebSocket('ws://localhost:8080');
+    socketRef.current = socket;
 
     socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
+      const message: MessageSocket = JSON.parse(event.data);
 
       //
       // New Msg
@@ -65,6 +88,7 @@ export default function Home() {
       if (message.type === 'call-started') {
         const { CallSid, From, callId } = message;
         currentCalls[CallSid] = { CallSid, From, callId };
+        setChatWindow((prevChatWindow) => ({ ...prevChatWindow, [callId]: CallSid }));
         // setCurrentCalls((prevCalls) => ({ ...prevCalls, [CallSid]: { CallSid, From, callId } }));
         addMessage(callId, { sender: 'System', text: `Call started with ${From}` });
         return;
@@ -96,23 +120,35 @@ export default function Home() {
 
     socket.onerror = (event) => {
       console.error('Socket error', event);
-      setStatus('disconnected');
+      setStatus('disconnected & error');
     };
 
     return () => {
-      socket.close();
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
     };
-  }, []);
+  }, [reRender]);
 
   return (
     <div className='flex flex-row h-screen'>
-      <RenderChat messages={messagesOne} color={'red'} status={status} />
-      <RenderChat messages={messagesTwo} color={'blue'} status={status} />
+      <RenderChat messages={messagesOne} color={'red'} status={status} sendMessageSocket={sendMessageSocket('1')} />
+      <RenderChat messages={messagesTwo} color={'blue'} status={status} sendMessageSocket={sendMessageSocket('2')} />
     </div>
   );
 }
 
-function RenderChat({ messages, color, status }: { messages: Message[]; color: string; status: string }) {
+function RenderChat({
+  messages,
+  color,
+  status,
+  sendMessageSocket,
+}: {
+  messages: Message[];
+  color: string;
+  status: string;
+  sendMessageSocket: Function;
+}) {
   const [text, setText] = useState<string>('connecting...');
   // const [bgColor, setBgColor] = useState<string>('bg-gray-300');
 
@@ -123,6 +159,18 @@ function RenderChat({ messages, color, status }: { messages: Message[]; color: s
     status === 'connected' ? setText('') : setText(status);
   }, [status]);
 
+  function sendMessage() {
+    sendMessageSocket(text);
+    setText('');
+  }
+
+  function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+      sendMessage();
+      event.preventDefault();
+    }
+  }
+
   return (
     <div className={`flex-1 bg-${color}-200 flex flex-col justify-between`}>
       <div id='chat' className='p-4 rounded shadow overflow-auto'>
@@ -132,8 +180,16 @@ function RenderChat({ messages, color, status }: { messages: Message[]; color: s
       </div>
 
       <div id='textbox' className={`flex justify-end items-center space-x-2 bg-${color}-500 p-2`}>
-        <textarea className={`flex-1 ${bgColor}`} rows={3} value={text} onChange={(e) => setText(e.target.value)} />
-        <button className='px-4 py-3 bg-green-500 text-white'>Send</button>
+        <textarea
+          className={`flex-1 ${bgColor}`}
+          rows={3}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleKeyPress}
+        />
+        <button className='px-4 py-3 bg-green-500 text-white' onClick={sendMessage}>
+          Send
+        </button>
       </div>
     </div>
   );

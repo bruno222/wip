@@ -1,4 +1,6 @@
 const WebSocket = require('ws');
+const { getCall } = require('./services/state');
+
 const wss = new WebSocket.Server({ port: 8080 });
 
 feSendCommand = (type, payload) => {
@@ -42,7 +44,19 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (message) => {
     console.log(`Received message: ${message}`);
-    ws.send(`Server received your message: ${message}`);
+    // ws.send(`Server received your message: ${message}`);
+
+    const { type, text, CallSid } = JSON.parse(message);
+    if (type === 'new-msg-from-supervisor') {
+      const currentCall = getCall(CallSid);
+      if (!currentCall) {
+        console.log(`CallSid not found!`.red);
+        return;
+      }
+      console.log(`Interaction ${currentCall.interactionCount} – STT -> GPT: ${text}`.yellow);
+      feSendMessage(CallSid, 'Supervisor', text);
+      currentCall.gptService.completion(text, currentCall.interactionCount++, 'system', 'system');
+    }
   });
 
   ws.on('close', () => {

@@ -9,7 +9,8 @@ const { StreamService } = require('./services/stream-service');
 const { TranscriptionService } = require('./services/transcription-service');
 const { TextToSpeechService } = require('./services/tts-service');
 
-const { feSendMessage } = require('./app-frontend-ws');
+const { feStart, feSendMessage } = require('./app-frontend-ws');
+const { addCall, deleteCall, getCall } = require('./services/state');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
@@ -19,15 +20,21 @@ ExpressWs(app);
 const PORT = process.env.PORT || 3000;
 
 let callId = 0;
-const currentCalls = {};
 
 app.post('/incoming', (req, res) => {
   const { From, CallSid, CallToken } = req.body;
   console.log('New call: ', From, CallSid);
 
   callId++;
-  currentCall = { CallSid, From, callId };
-  currentCalls[CallSid] = currentCall;
+
+  const currentCall = {
+    CallSid,
+    From,
+    callId,
+    gptService: new GptService(),
+    interactionCount: 1,
+  };
+  addCall(CallSid, currentCall);
 
   res.status(200);
   res.type('text/xml');
@@ -42,7 +49,7 @@ app.post('/incoming', (req, res) => {
     `);
   }
 
-  feSendCommand('call-started', currentCall);
+  feSendCommand('call-started', { ...currentCall, gptService: null });
 
   res.end(`
     <Response>
@@ -55,21 +62,19 @@ app.post('/incoming', (req, res) => {
 
 app.ws('/connection/:CallSid', (ws, req) => {
   const { CallSid } = req.params;
-  const currentCall = currentCalls[CallSid];
-  const { From } = currentCall;
+  const currentCall = getCall(CallSid);
+  const { From, gptService } = currentCall;
   console.log(`New connection: ${From} - ${CallSid}`);
 
   ws.on('error', console.error);
   // Filled in from start message
   let streamSid;
 
-  const gptService = new GptService();
   const streamService = new StreamService(ws);
   const transcriptionService = new TranscriptionService();
   const ttsService = new TextToSpeechService({});
 
   let marks = [];
-  let interactionCount = 1;
 
   // Incoming from MediaStream
   ws.on('message', function message(data) {
@@ -90,9 +95,9 @@ app.ws('/connection/:CallSid', (ws, req) => {
     } else if (msg.event === 'stop') {
       console.log(`Twilio -> Media stream ${streamSid} ended.`.underline.red);
 
-      feSendCommand('call-ended', currentCall);
+      feSendCommand('call-ended', { ...currentCall, gptService: null });
       callId--;
-      delete currentCalls[CallSid];
+      deleteCall(CallSid);
     }
   });
 
@@ -113,10 +118,10 @@ app.ws('/connection/:CallSid', (ws, req) => {
     if (!text) {
       return;
     }
-    console.log(`Interaction ${interactionCount} – STT -> GPT: ${text}`.yellow);
+    console.log(`Interaction ${currentCall.interactionCount} – STT -> GPT: ${text}`.yellow);
     feSendMessage(CallSid, 'Customer', text);
-    gptService.completion(text, interactionCount);
-    interactionCount += 1;
+    gptService.completion(text, currentCall.interactionCount++);
+    // currentCall.interactionCount += 1;
   });
 
   gptService.on('gptreply', async (gptReply, icount) => {
