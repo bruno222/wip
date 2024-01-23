@@ -100,6 +100,7 @@ export default function Home() {
       if (message.type === 'call-ended') {
         const { CallSid, From, callId } = message;
         currentCalls[CallSid] = { CallSid, From, callId };
+        setChatWindow((prevChatWindow) => ({ ...prevChatWindow, [callId]: undefined }));
         addMessage(callId, { sender: 'System', text: `Call ended.` });
         return;
       }
@@ -132,8 +133,14 @@ export default function Home() {
 
   return (
     <div className='flex flex-row h-screen'>
-      <RenderChat messages={messagesOne} color={'red'} status={status} sendMessageSocket={sendMessageSocket('1')} />
-      <RenderChat messages={messagesTwo} color={'blue'} status={status} sendMessageSocket={sendMessageSocket('2')} />
+      <RenderChat messages={messagesOne} color={'red'} status={status} sendMessageSocket={sendMessageSocket('1')} CallSid={chatWindow[1]} />
+      <RenderChat
+        messages={messagesTwo}
+        color={'blue'}
+        status={status}
+        sendMessageSocket={sendMessageSocket('2')}
+        CallSid={chatWindow[2]}
+      />
     </div>
   );
 }
@@ -143,16 +150,23 @@ function RenderChat({
   color,
   status,
   sendMessageSocket,
+  CallSid,
 }: {
   messages: Message[];
   color: string;
   status: string;
   sendMessageSocket: Function;
+  CallSid: undefined | string;
 }) {
   const [text, setText] = useState<string>('connecting...');
   // const [bgColor, setBgColor] = useState<string>('bg-gray-300');
 
+  if (status === 'connected' && !CallSid) {
+    status = 'waiting for a call...';
+  }
+
   const bgColor = status === 'connected' ? '' : 'bg-gray-300';
+  const isDisabled = status !== 'connected';
 
   useEffect(() => {
     console.log('status changed', status);
@@ -186,6 +200,7 @@ function RenderChat({
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyPress}
+          disabled={isDisabled}
         />
         <button className='px-4 py-3 bg-green-500 text-white' onClick={sendMessage}>
           Send
