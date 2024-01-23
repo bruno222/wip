@@ -49,12 +49,18 @@ export default function Home() {
     });
   }
 
-  const sendMessageSocket = (callId: string) => (text: string) => {
-    const CallSid = chatWindow[callId];
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ type: 'new-msg-from-supervisor', text, CallSid }));
-    }
-  };
+  const sendCommandSocket =
+    (callId: string) =>
+    (type: string, text = '') => {
+      const CallSid = chatWindow[callId];
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(JSON.stringify({ type, text, CallSid }));
+      }
+
+      if (type === 'hijack-call') {
+        addMessage(callId, { sender: 'System', text: `Forwarding the call to you...` });
+      }
+    };
 
   useEffect(() => {
     console.log('ws connecting...');
@@ -101,7 +107,7 @@ export default function Home() {
         const { CallSid, From, callId } = message;
         currentCalls[CallSid] = { CallSid, From, callId };
         setChatWindow((prevChatWindow) => ({ ...prevChatWindow, [callId]: undefined }));
-        addMessage(callId, { sender: 'System', text: `Call ended.` });
+        addMessage(callId, { sender: 'System', text: `Call with the Bot has ended.` });
         return;
       }
 
@@ -133,12 +139,12 @@ export default function Home() {
 
   return (
     <div className='flex flex-row h-screen'>
-      <RenderChat messages={messagesOne} color={'red'} status={status} sendMessageSocket={sendMessageSocket('1')} CallSid={chatWindow[1]} />
+      <RenderChat messages={messagesOne} color={'red'} status={status} sendCommandSocket={sendCommandSocket('1')} CallSid={chatWindow[1]} />
       <RenderChat
         messages={messagesTwo}
         color={'blue'}
         status={status}
-        sendMessageSocket={sendMessageSocket('2')}
+        sendCommandSocket={sendCommandSocket('2')}
         CallSid={chatWindow[2]}
       />
     </div>
@@ -149,13 +155,13 @@ function RenderChat({
   messages,
   color,
   status,
-  sendMessageSocket,
+  sendCommandSocket,
   CallSid,
 }: {
   messages: Message[];
   color: string;
   status: string;
-  sendMessageSocket: Function;
+  sendCommandSocket: Function;
   CallSid: undefined | string;
 }) {
   const [text, setText] = useState<string>('connecting...');
@@ -174,8 +180,12 @@ function RenderChat({
   }, [status]);
 
   function sendMessage() {
-    sendMessageSocket(text);
+    sendCommandSocket('new-msg-from-supervisor', text);
     setText('');
+  }
+
+  function hijackCall() {
+    sendCommandSocket('hijack-call');
   }
 
   function handleKeyPress(event) {
@@ -204,6 +214,9 @@ function RenderChat({
         />
         <button className='px-4 py-3 bg-green-500 text-white' onClick={sendMessage}>
           Send
+        </button>
+        <button className='px-4 py-3 bg-yellow-500 text-white' onClick={hijackCall}>
+          Hijack
         </button>
       </div>
     </div>

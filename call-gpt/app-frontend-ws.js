@@ -44,9 +44,11 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (message) => {
     console.log(`Received message: ${message}`);
-    // ws.send(`Server received your message: ${message}`);
-
     const { type, text, CallSid } = JSON.parse(message);
+
+    //
+    // Supervisor sent a hint message
+    //
     if (type === 'new-msg-from-supervisor') {
       const currentCall = getCall(CallSid);
       if (!currentCall) {
@@ -56,6 +58,18 @@ wss.on('connection', (ws) => {
       console.log(`Interaction ${currentCall.interactionCount} – STT -> GPT: ${text}`.yellow);
       feSendMessage(CallSid, 'Supervisor', text);
       currentCall.gptService.completion(text, currentCall.interactionCount++, 'system', 'system');
+    }
+
+    //
+    // Supervisor hijacked the call
+    //
+    if (type === 'hijack-call') {
+      const currentCall = getCall(CallSid);
+      if (!currentCall) {
+        console.log(`CallSid not found!`.red);
+        return;
+      }
+      hijackCall(CallSid);
     }
   });
 
@@ -72,3 +86,21 @@ wss.on('connection', (ws) => {
 // setInterval(() => {
 //   feSendMessage('Server', `okkk`);
 // }, 3000);
+
+async function hijackCall(callSid) {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const client = require('twilio')(accountSid, authToken);
+
+  const answer = await client.calls(callSid).update({
+    twiml: `<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Say language="en-US" loop="1" voice="Google.en-US-Standard-A">Please wait a second while I forward you to one of your agents.</Say>
+            <Enqueue workflowSid="WW14f8ff840a6ddc78b352d510ff2e9b35">
+                <Task>{ "type": "inbound", "name": "test bruno" }</Task>
+            </Enqueue>
+        </Response>  `,
+  });
+
+  console.log('call update answer: ', answer);
+}
