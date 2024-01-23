@@ -1,92 +1,46 @@
 // create metadata for all the available functions to pass to completions API
 const tools = [
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "checkInventory",
-      description: "Check the inventory of airpods, airpods pro or airpods max.",
+      name: 'buyCharger',
+      description: 'Buy a charger for your phone',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
           model: {
-            type: "string",
-            "enum": ["airpods", "airpods pro", "airpods max"],
-            description: "The model of airpods, either the airpods, airpods pro or airpods max",
+            type: 'string',
+            enum: ['usb c', 'lightning'],
+            description: 'The model of the charger, USB B for Android or Lightning for iPhone.',
           },
         },
-        required: ["model"],
+        required: ['model'],
       },
       returns: {
-        type: "object",
+        type: 'object',
         properties: {
-          stock: {
-            type: "integer",
-            description: "An integer containing how many of the model are in currently in stock."
-          }
-        }
-      }
+          buyStatus: {
+            type: 'string',
+            description: 'Contains the status of the purchase.',
+          },
+        },
+      },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "checkPrice",
-      description: "Check the price of given model of airpods, airpods pro or airpods max.",
-      parameters: {
-        type: "object",
+      name: 'confirmPurchase',
+      description: 'Security step to confirm the sale, sending an SMS to the customer with a link to be confirmed.',
+      returns: {
+        type: 'object',
         properties: {
-          model: {
-            type: "string",
-            "enum": ["airpods", "airpods pro", "airpods max"],
-            description: "The model of airpods, either the airpods, airpods pro or airpods max",
+          buyStatus: {
+            type: 'string',
+            description: 'Contains the status of this security step.',
           },
         },
-        required: ["model"],
       },
-      returns: {
-        type: "object",
-        properties: {
-          price: {
-            type: "integer",
-            description: "the price of the model"
-          }
-        }
-      }
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "placeOrder",
-      description: "Places an order for a set of airpods.",
-      parameters: {
-        type: "object",
-        properties: {
-          model: {
-            type: "string",
-            "enum": ["airpods", "airpods pro"],
-            description: "The model of airpods, either the regular or pro",
-          },
-          quantity: {
-            type: "integer",
-            description: "The number of airpods they want to order",
-          },
-        },
-        required: ["type", "quantity"],
-      },
-      returns: {
-        type: "object",
-        properties: {
-          price: {
-            type: "integer",
-            description: "The total price of the order including tax"
-          },
-          orderNumber: {
-            type: "integer",
-            description: "The order number associated with the order."
-          }
-        }
-      }
     },
   },
 ];

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const { sendSMS } = require('./services/twilio-sdk');
 const ExpressWs = require('express-ws');
 const colors = require('colors');
 
@@ -10,7 +11,7 @@ const { TranscriptionService } = require('./services/transcription-service');
 const { TextToSpeechService } = require('./services/tts-service');
 
 const { feStart, feSendMessage } = require('./app-frontend-ws');
-const { addCall, deleteCall, getCall } = require('./services/state');
+const { addCall, deleteCall, getCall, getPhoneState, addPhoneState } = require('./services/state');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,6 +21,47 @@ ExpressWs(app);
 const PORT = process.env.PORT || 3000;
 
 let callId = 0;
+
+app.get('/sms/:phone/:code', async (req, res) => {
+  try {
+    const { phone, code } = req.params;
+    const From = `+${phone}`;
+    console.log('SMS link clicked. Code: ', code, 'From: ', From);
+    const state = getPhoneState(From);
+    const currentCall = getCall(state.CallSid);
+    res.status(200);
+
+    if (!state || state.status !== 'waiting') {
+      return res.end(`Humm... You have no pending purchase.`);
+    }
+
+    if (state.status === 'expired') {
+      return res.end(`You already bought it! Thank you!`);
+    }
+
+    if (state.code !== +code) {
+      console.log('Invalid code', state.code, code, state);
+      return res.end(`Invalid Code... Please try again.`);
+    }
+
+    //
+    // Success Scenario
+    //
+    console.log('Success confirming the SMS link!'.green);
+
+    addPhoneState(From, { status: 'expired' });
+    currentCall.gptService.completion(
+      'Stop talking what ever you are talking and just say to the customer that you just saw an update in your system and his/her purchase has been done. Thank the customer and say bye.',
+      currentCall.interactionCount++,
+      'system',
+      'system'
+    );
+    return res.end(`Confirmed! Thank you for your purchase!`);
+  } catch (e) {
+    res.end('error');
+    console.error('error', e);
+  }
+});
 
 app.post('/incoming', (req, res) => {
   const { From, CallSid, CallToken } = req.body;
@@ -31,7 +73,7 @@ app.post('/incoming', (req, res) => {
     CallSid,
     From,
     callId,
-    gptService: new GptService(),
+    gptService: new GptService(CallSid),
     interactionCount: 1,
   };
   addCall(CallSid, currentCall);

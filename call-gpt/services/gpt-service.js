@@ -2,6 +2,7 @@ const EventEmitter = require('events');
 const colors = require('colors');
 const OpenAI = require('openai');
 const tools = require('../functions/function-manifest');
+const { getCall, getPhoneState } = require('./state');
 
 // Import all functions included in function manifest
 // Note: the function name and file name must be the same
@@ -12,14 +13,16 @@ tools.forEach((tool) => {
 });
 
 class GptService extends EventEmitter {
-  constructor() {
+  constructor(CallSid) {
     super();
+    this.CallSid = CallSid;
     this.openai = new OpenAI();
     (this.userContext = [
       {
         role: 'system',
         content:
-          "You are an outbound sales representative selling Apple Airpods. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don't ask more than 1 question at a time. Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. Speak out all prices to include the currency. Please help them decide between the airpods, airpods pro and airpods max by asking questions like 'Do you prefer headphones that go in your ear or over the ear?'. If they are trying to choose between the airpods and airpods pro try asking them if they need noise canceling. Once you know which model they would like ask them how many they would like to purchase and try to get them to place an order. You must add a '•' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.",
+          // "You are an outbound sales representative selling Apple Airpods. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don't ask more than 1 question at a time. Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. Speak out all prices to include the currency. Please help them decide between the airpods, airpods pro and airpods max by asking questions like 'Do you prefer headphones that go in your ear or over the ear?'. If they are trying to choose between the airpods and airpods pro try asking them if they need noise canceling. Once you know which model they would like ask them how many they would like to purchase and try to get them to place an order. You must add a '•' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.",
+          "You are an outbound sales representative selling Chargers. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don't ask more than 1 question at a time. Ask for clarification if a user request is ambiguous. Speak out all prices to include the currency. Once you know which model they would like proceed with the purchase. Once customers agreed on the purchase, a confirmation SMS will be sent to the customer to confirm the sale once the confirmPurchase function is called, reminder the customer that he/she needs to click on the link in that SMS. You must add a '•' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.",
       },
       { role: 'assistant', content: "Hello! I understand you're looking for a pair of AirPods, is that correct?" },
     ]),
@@ -79,8 +82,30 @@ class GptService extends EventEmitter {
             functionArgs = JSON.parse(functionArgs.substring(functionArgs.indexOf(''), functionArgs.indexOf('}') + 1));
         }
 
+        //
+        // Get all states and pass everything to all functions to make is easier to work with
+        //
+        const currentCall = getCall(this.CallSid);
+        if (currentCall) {
+          functionArgs = {
+            ...functionArgs,
+            ...currentCall,
+            gptService: undefined,
+          };
+
+          const phoneState = getPhoneState(currentCall.From);
+          if (phoneState) {
+            functionArgs = {
+              ...functionArgs,
+              ...phoneState,
+            };
+          }
+        }
+
         const functionToCall = availableFunctions[functionName];
-        let functionResponse = functionToCall(functionArgs);
+        let functionResponse = await functionToCall(functionArgs);
+
+        console.log('step 1', functionResponse); // {"stock":10}
 
         // Step 4: send the info on the function call and function response to GPT
         this.userContext.push({
@@ -103,6 +128,8 @@ class GptService extends EventEmitter {
             partialResponseIndex: this.partialResponseIndex,
             partialResponse,
           };
+
+          console.log('step 2', gptReply);
 
           this.emit('gptreply', gptReply, interactionCount);
           this.partialResponseIndex++;
