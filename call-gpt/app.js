@@ -10,7 +10,9 @@ const { TranscriptionService } = require('./services/transcription-service');
 const { TextToSpeechService } = require('./services/tts-service');
 
 const { feStart, feSendMessage } = require('./app-frontend-ws');
-const { addCall, deleteCall, getCall } = require('./services/state');
+const { addCall, deleteCall, getCall, getPhoneState, addPhoneState } = require('./services/state');
+
+const { sendSMS } = require('./functions/twilio-sdk');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,6 +22,26 @@ ExpressWs(app);
 const PORT = process.env.PORT || 3000;
 
 let callId = 0;
+
+app.post('/receive-sms', (req, res) => {
+  console.log('Received SMS: ', req.body);
+  const { From, Body } = req.body;
+
+  // addPhoneState(From, { status: 'waiting' });
+
+  const state = getPhoneState(From);
+  if (state && state.status === 'waiting') {
+    console.log('step 1');
+    if (Body && Body.toLowerCase().includes('yes')) {
+      console.log('step 2');
+      const text = 'Purchase confirmed. Continue to finalize the sale.';
+      // TODO
+      // currentCall.gptService.completion(text, currentCall.interactionCount++, 'system', 'system');
+      // feSendMessage(CallSid, 'System', text);
+      addPhoneState(From, { status: 'done' });
+    }
+  }
+});
 
 app.post('/incoming', (req, res) => {
   const { From, CallSid, CallToken } = req.body;
@@ -59,6 +81,8 @@ app.post('/incoming', (req, res) => {
     </Response>
   `);
 });
+
+app.use('/', express.static(path.join(__dirname, '../front-end/out')));
 
 app.ws('/connection/:CallSid', (ws, req) => {
   const { CallSid } = req.params;

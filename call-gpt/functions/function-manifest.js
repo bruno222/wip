@@ -1,92 +1,114 @@
 // create metadata for all the available functions to pass to completions API
 const tools = [
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "checkInventory",
-      description: "Check the inventory of airpods, airpods pro or airpods max.",
+      name: 'checkInventory',
+      description: 'Check the inventory of airpods, airpods pro or airpods max.',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
           model: {
-            type: "string",
-            "enum": ["airpods", "airpods pro", "airpods max"],
-            description: "The model of airpods, either the airpods, airpods pro or airpods max",
+            type: 'string',
+            enum: ['airpods', 'airpods pro', 'airpods max'],
+            description: 'The model of airpods, either the airpods, airpods pro or airpods max',
           },
         },
-        required: ["model"],
+        required: ['model'],
       },
       returns: {
-        type: "object",
+        type: 'object',
         properties: {
           stock: {
-            type: "integer",
-            description: "An integer containing how many of the model are in currently in stock."
-          }
-        }
-      }
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "checkPrice",
-      description: "Check the price of given model of airpods, airpods pro or airpods max.",
-      parameters: {
-        type: "object",
-        properties: {
-          model: {
-            type: "string",
-            "enum": ["airpods", "airpods pro", "airpods max"],
-            description: "The model of airpods, either the airpods, airpods pro or airpods max",
+            type: 'integer',
+            description: 'An integer containing how many of the model are in currently in stock.',
           },
         },
-        required: ["model"],
       },
-      returns: {
-        type: "object",
-        properties: {
-          price: {
-            type: "integer",
-            description: "the price of the model"
-          }
-        }
-      }
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "placeOrder",
-      description: "Places an order for a set of airpods.",
+      name: 'checkPrice',
+      description: 'Check the price of given model of airpods, airpods pro or airpods max.',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
           model: {
-            type: "string",
-            "enum": ["airpods", "airpods pro"],
-            description: "The model of airpods, either the regular or pro",
+            type: 'string',
+            enum: ['airpods', 'airpods pro', 'airpods max'],
+            description: 'The model of airpods, either the airpods, airpods pro or airpods max',
+          },
+        },
+        required: ['model'],
+      },
+      returns: {
+        type: 'object',
+        properties: {
+          price: {
+            type: 'integer',
+            description: 'the price of the model',
+          },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'placeOrder',
+      description: 'Places an order for a set of airpods.',
+      parameters: {
+        type: 'object',
+        properties: {
+          model: {
+            type: 'string',
+            enum: ['airpods', 'airpods pro'],
+            description: 'The model of airpods, either the regular or pro',
           },
           quantity: {
-            type: "integer",
-            description: "The number of airpods they want to order",
+            type: 'integer',
+            description: 'The number of airpods they want to order',
           },
         },
-        required: ["type", "quantity"],
+        required: ['type', 'quantity'],
       },
       returns: {
-        type: "object",
+        type: 'object',
         properties: {
           price: {
-            type: "integer",
-            description: "The total price of the order including tax"
+            type: 'integer',
+            description: 'The total price of the order including tax',
           },
           orderNumber: {
-            type: "integer",
-            description: "The order number associated with the order."
-          }
-        }
-      }
+            type: 'integer',
+            description: 'The order number associated with the order.',
+          },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'confirmOrderMMS',
+      description: 'Sends an MMS to confirm the order to the customer.',
+
+      parameters: {
+        type: 'object',
+        properties: {
+          item: {
+            type: 'string',
+            description: 'The item to be purchased.',
+          },
+        },
+        required: ['item'],
+      },
+      returns: {
+        type: 'string',
+        description: 'We add the item into the shopping cart and we wait for the customer to confirm the purchase via MMS.',
+      },
     },
   },
 ];
