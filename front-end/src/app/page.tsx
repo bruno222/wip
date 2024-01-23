@@ -19,8 +19,6 @@ interface MessageSocket extends Message {
   callId: string;
 }
 
-let reRender = new Date();
-
 export default function Home() {
   const [messagesOne, setMessagesOne] = useState<Message[]>([]);
   const [messagesTwo, setMessagesTwo] = useState<Message[]>([]);
@@ -135,7 +133,7 @@ export default function Home() {
         socketRef.current.close();
       }
     };
-  }, [reRender]);
+  }, []);
 
   return (
     <div className='flex flex-row h-screen'>
@@ -188,7 +186,7 @@ function RenderChat({
     sendCommandSocket('hijack-call');
   }
 
-  function handleKeyPress(event) {
+  function handleKeyPress(event: any) {
     if (event.key === 'Enter') {
       sendMessage();
       event.preventDefault();
