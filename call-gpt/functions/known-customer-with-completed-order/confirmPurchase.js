@@ -1,5 +1,5 @@
-const { sendSMS } = require('../services/twilio-sdk');
-const { addPhoneState } = require('../services/state');
+const { sendSMS } = require('../../services/twilio-sdk');
+const { addPhoneState } = require('../../services/state');
 
 async function confirmPurchase(functionArgs) {
   try {
