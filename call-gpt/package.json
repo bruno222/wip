@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node ./test/test-call.js",
     "dev": "nodemon app.js",
     "start": "node app.js"
   },
