@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { getCall } = require('./services/state');
+const { getCall, getPhoneState } = require('./services/state');
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -69,7 +69,9 @@ wss.on('connection', (ws) => {
         console.log(`CallSid not found!`.red);
         return;
       }
-      hijackCall(CallSid);
+
+      const { customerName, customerCity } = getPhoneState(currentCall.From) || {};
+      hijackCall(CallSid, customerName, customerCity);
     }
   });
 
@@ -87,7 +89,7 @@ wss.on('connection', (ws) => {
 //   feSendMessage('Server', `okkk`);
 // }, 3000);
 
-async function hijackCall(callSid) {
+async function hijackCall(callSid, customerName, customerCity) {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const client = require('twilio')(accountSid, authToken);
@@ -96,8 +98,8 @@ async function hijackCall(callSid) {
     twiml: `<?xml version="1.0" encoding="UTF-8"?>
         <Response>
             <Say language="en-US" loop="1" voice="Google.en-US-Standard-A">Please wait a second while I forward you to one of your agents.</Say>
-            <Enqueue workflowSid="WW14f8ff840a6ddc78b352d510ff2e9b35">
-                <Task>{ "type": "inbound", "name": "test bruno" }</Task>
+            <Enqueue workflowSid="${process.env.TWILIO_TASK_ROUTER_WORKFLOW}">
+                <Task>{ "type": "inbound", "name": "${customerName}", "city": "${customerCity}", "autoAccept": 1 }</Task>
             </Enqueue>
         </Response>  `,
   });

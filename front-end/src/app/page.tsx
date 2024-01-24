@@ -183,7 +183,18 @@ function RenderChat({
   }
 
   function hijackCall() {
+    updateFlexActivityToAvailable();
     sendCommandSocket('hijack-call');
+  }
+
+  function updateFlexActivityToAvailable() {
+    // if not loaded in an iframe, don't do anything
+    if (!window.parent) {
+      return;
+    }
+
+    // was loaded in an iframe of Flex
+    window.parent.postMessage({ type: 'FLEX_CHANGE_ACTIVITY_TO_AVAILABLE' }, '*');
   }
 
   function handleKeyPress(event: any) {
@@ -194,7 +205,8 @@ function RenderChat({
   }
 
   return (
-    <div className={`flex-1 bg-${color}-200 flex flex-col justify-between`}>
+    // <div className={`flex-1 bg-${color}-200 flex flex-col justify-between`}>
+    <div className='flex-1 bg-green-200 flex flex-col justify-between'>
       <div id='chat' className='p-4 rounded shadow overflow-auto'>
         {messages.map((message, index) => (
           <ChatMessage key={index} {...message} />
