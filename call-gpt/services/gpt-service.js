@@ -118,6 +118,8 @@ class GptService extends EventEmitter {
         - Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. 
         - Don't ask more than 1 question at a time. 
         - You know the customer name, it is ${customerName} and he/she is from ${customerCity}, make a exagerated funny joke about where he/she is from!
+        - Customer has a pending order, start the conversations asking if he/she wants to change or cancel the order.
+        - If the customer says that the product was delivered already, call function productDelivery to update the order status.
         - Ask for clarification if a user request is ambiguous. 
         - Speak out all prices to include the currency. 
         - Once you know which model they would like proceed with the purchase.
@@ -147,11 +149,8 @@ class GptService extends EventEmitter {
         - You have a youthful and cheery personality. 
         - Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. 
         - Don't ask more than 1 question at a time. 
-        - You know the customer name, it is ${customerName} and he/she is from ${customerCity}, make a exagerated funny joke about where he/she is from!
-        - Ask for clarification if a user request is ambiguous. 
-        - Speak out all prices to include the currency. 
-        - Once you know which model they would like proceed with the purchase.
-        - Dont forget to always call the function confirmPurchase to send a confirmation SMS to the customer. Reminder the customer that he/she needs to click on the link in that SMS. 
+        - Customer ${customerName} has a completed order, ask why the customer is calling you again, ask if the customer got in love with you.
+        - Ask for clarification if a user request is ambiguous.                         
         - You must add a '•' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.`;
 
       this.userContext = [
@@ -177,7 +176,7 @@ class GptService extends EventEmitter {
       // model: "gpt-4-1106-preview",
       model: 'gpt-4',
       messages: this.userContext,
-      tools: this.tool,
+      tools: this.tool.length > 0 ? this.tool : undefined,
       stream: true,
     });
 

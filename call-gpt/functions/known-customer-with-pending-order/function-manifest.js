@@ -46,22 +46,8 @@ const tools = [
   {
     type: 'function',
     function: {
-      name: 'saveCustomerName',
-      description: 'Save the customer name and the city he/she is from',
-      parameters: {
-        type: 'object',
-        properties: {
-          customerName: {
-            type: 'string',
-            description: 'First name of the customer',
-          },
-          customerCity: {
-            type: 'string',
-            description: 'City of the customer',
-          },
-        },
-        required: ['customerName', 'customerCity'],
-      },
+      name: 'productDelivery',
+      description: 'Update the order status to delivered',
     },
   },
 ];
