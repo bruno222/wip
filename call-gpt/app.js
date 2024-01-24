@@ -14,7 +14,7 @@ const { feStart, feSendMessage } = require('./app-frontend-ws');
 const { addCall, deleteCall, getCall, getPhoneState, addPhoneState } = require('./services/state');
 
 const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../front-end/out')));
 app.use(express.urlencoded({ extended: true }));
 ExpressWs(app);
 
