@@ -16,13 +16,13 @@ With this project, your Agents (real human beings) can:
 
 To set up the project, you need to install at least 2 out of the 4 assets:
 
-- [mandatory] Ngrok - CLI tool to expose your computer so Twilio can send the Media Stream to your Node.js project.
+- [**mandatory**] Ngrok - CLI tool to expose your computer so Twilio can send the Media Stream to your Node.js project.
 
-- [mandatory] The Node.js project (back-end) - the core of the project.
+- [**mandatory**] The Node.js project (back-end) - the core of the project.
 
-- [optional] The Next.js project (front-end) - only necessary if you need to modify the HTML; otherwise, the back-end has a static version of the front-end within the /front-end/out folder.
+- [**optional**] The Next.js project (front-end) - only necessary if you need to modify the HTML; otherwise, the back-end has a static version of the front-end within the /front-end/out folder.
 
-- [optional] The Flex Plugin - required only if you intend to use the "hijack call" option to escalate the call from the Virtual Agent to the Real Human Agent.
+- [**optional**] The Flex Plugin - required only if you intend to use the "hijack call" option to escalate the call from the Virtual Agent to the Real Human Agent.
 
 #### Step 1 of 4 - Installing ngrok
 
