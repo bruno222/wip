@@ -50,6 +50,7 @@ app.get('/sms/:phone/:code', async (req, res) => {
     console.log('Success confirming the SMS link!'.green);
 
     addPhoneState(From, { status: 'expired' });
+
     currentCall.gptService.completion(
       'Stop talking what ever you are talking and just say to the customer that you just saw an update in your system and his/her purchase has been done. Thank the customer and say bye.',
       currentCall.interactionCount++,
@@ -73,7 +74,7 @@ app.post('/incoming', (req, res) => {
     CallSid,
     From,
     callId,
-    gptService: new GptService(CallSid),
+    gptService: new GptService(CallSid, From),
     interactionCount: 1,
   };
   addCall(CallSid, currentCall);

@@ -21,25 +21,25 @@ module.exports.addCall = (CallSid, call) => {
 //      that does not change no matter how many calls the customer calls in
 //      (more like a "persistent" state, but it is in-memory for the hackathon)
 //
-module.exports.phoneState = {};
+phoneState = {};
 
 module.exports.getPhoneState = (phoneNumber) => {
-  return module.exports.phoneState[phoneNumber];
+  return phoneState[phoneNumber];
 };
 
 module.exports.addPhoneState = (phoneNumber, state) => {
   // add on top
-  if (module.exports.phoneState[phoneNumber]) {
-    module.exports.phoneState[phoneNumber] = {
-      ...module.exports.phoneState[phoneNumber],
+  if (phoneState[phoneNumber]) {
+    phoneState[phoneNumber] = {
+      ...phoneState[phoneNumber],
       ...state,
     };
 
-    console.log('Phone state updated', phoneNumber, state);
+    console.log('Phone state updated', phoneNumber, phoneState[phoneNumber]);
     return;
   }
 
   // add new
   console.log('Phone state created', phoneNumber, state);
-  module.exports.phoneState[phoneNumber] = state;
+  phoneState[phoneNumber] = state;
 };
