@@ -107,6 +107,8 @@ app.ws('/connection/:CallSid', (ws, req) => {
   const { CallSid } = req.params;
   const currentCall = getCall(CallSid);
   const { From, gptService } = currentCall;
+  const { customerName } = getPhoneState(From);
+  const isCustomerKnown = !!customerName;
   console.log(`New connection: ${From} - ${CallSid}`);
 
   ws.on('error', console.error);
@@ -124,11 +126,16 @@ app.ws('/connection/:CallSid', (ws, req) => {
     const msg = JSON.parse(data);
     if (msg.event === 'start') {
       streamSid = msg.start.streamSid;
-      const text = "Hello! I understand you're looking for a pair of AirPods, is that correct?";
-      feSendMessage(CallSid, 'Bot', text);
+
       streamService.setStreamSid(streamSid);
       console.log(`Twilio -> Starting Media Stream for ${streamSid}`.underline.red);
-      ttsService.generate({ partialResponseIndex: null, partialResponse: text }, 1);
+
+      console.log('isCustomerKnown', isCustomerKnown);
+      if (!isCustomerKnown) {
+        const text = "Hello! I understand you're looking for a pair of AirPods, is that correct?";
+        feSendMessage(CallSid, 'Bot', text);
+        ttsService.generate({ partialResponseIndex: null, partialResponse: text }, 1);
+      }
     } else if (msg.event === 'media') {
       transcriptionService.send(msg.media.payload);
     } else if (msg.event === 'mark') {
