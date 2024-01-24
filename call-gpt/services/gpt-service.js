@@ -17,6 +17,7 @@ class GptService extends EventEmitter {
     super();
     this.CallSid = CallSid;
     this.openai = new OpenAI();
+    this.partialResponseIndex = 0;
 
     const phoneState = getPhoneState(From) || {};
     const isCustomerKnown = !!(phoneState.customerName && phoneState.customerCity);
@@ -37,6 +38,14 @@ class GptService extends EventEmitter {
       - Dont forget to always call the function confirmPurchase to send a confirmation SMS to the customer. Reminder the customer that he/she needs to click on the link in that SMS. 
       - You must add a '•' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.`;
 
+    this.userContext = [
+      {
+        role: 'system',
+        content,
+      },
+      { role: 'assistant', content: "Hello! I understand you're looking for a pair of AirPods, is that correct?" },
+    ];
+
     //
     // When we know who is the customer and we have his name and the city he/she is from
     //
@@ -54,16 +63,14 @@ class GptService extends EventEmitter {
         - Once you know which model they would like proceed with the purchase.
         - Dont forget to always call the function confirmPurchase to send a confirmation SMS to the customer. Reminder the customer that he/she needs to click on the link in that SMS. 
         - You must add a '•' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.`;
-    }
 
-    (this.userContext = [
-      {
-        role: 'system',
-        content,
-      },
-      { role: 'assistant', content: "Hello! I understand you're looking for a pair of AirPods, is that correct?" },
-    ]),
-      (this.partialResponseIndex = 0);
+      this.userContext = [
+        {
+          role: 'system',
+          content,
+        },
+      ];
+    }
   }
 
   async completion(text, interactionCount, role = 'user', name = 'user') {
