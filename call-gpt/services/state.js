@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 //
 //  Current Calls state
 //
@@ -24,6 +27,12 @@ module.exports.addCall = (CallSid, call) => {
 phoneState = {};
 
 module.exports.getPhoneState = (phoneNumber) => {
+  const state = phoneState[phoneNumber];
+
+  if (!state) {
+    phoneState[phoneNumber] = loadPhoneState(phoneNumber);
+  }
+
   return phoneState[phoneNumber];
 };
 
@@ -36,10 +45,35 @@ module.exports.addPhoneState = (phoneNumber, state) => {
     };
 
     console.log('Phone state updated', phoneNumber, phoneState[phoneNumber]);
+    savePhoneState(phoneNumber, phoneState[phoneNumber]);
     return;
   }
 
   // add new
   console.log('Phone state created', phoneNumber, state);
   phoneState[phoneNumber] = state;
+  savePhoneState(phoneNumber, phoneState[phoneNumber]);
 };
+
+// Save state of the customer to disk to be reloaded to memory later in case Node.js gets restarted
+savePhoneState = (From, json) => {
+  fs.writeFileSync(path.join(__dirname, './.saved-state', From.replace('+', '')), JSON.stringify(json));
+};
+
+// Load state of the customer from disk and return the content
+const triedToLoadAlready = {};
+loadPhoneState = (From) => {
+  if (triedToLoadAlready[From]) {
+    return;
+  }
+  try {
+    const file = fs.readFileSync(path.join(__dirname, './.saved-state', From.replace('+', '')));
+    return JSON.parse(file);
+  } catch (e) {
+    triedToLoadAlready[From] = 1;
+    return;
+  }
+};
+
+// savePhoneState('+49123123132', { a: 1, b: 2 });
+// console.log(loadPhoneState('+49123123132'));
