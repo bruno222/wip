@@ -78,6 +78,7 @@ app.post('/incoming', (req, res) => {
     interactionCount: 1,
   };
   addCall(CallSid, currentCall);
+  addPhoneState(From, { CallSid });
 
   res.status(200);
   res.type('text/xml');

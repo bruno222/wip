@@ -106,3 +106,5 @@ async function hijackCall(callSid, customerName, customerCity) {
 
   console.log('call update answer: ', answer);
 }
+
+module.exports.hijackCall = hijackCall;

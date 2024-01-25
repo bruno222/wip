@@ -65,7 +65,7 @@ class GptService extends EventEmitter {
       - Once you know which shoe size, color, fit they would like proceed with the purchase. Don't be pushy to confirm purchase.
       - Dont forget to always call the function confirmPurchase to send a confirmation SMS to the customer. Reminder the customer that he/she needs to click on the link in that SMS. 
       - You must add a '•' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.
-      - If the customer wants to talk to a superviser, say I will connect you to my boss.`
+      - If the customer wants to talk to a superviser, say I will connect you to my boss.`;
 
       this.userContext = [
         {
@@ -129,6 +129,7 @@ class GptService extends EventEmitter {
         - Customer has a pending order, start the conversations asking if he/she wants to change or cancel the order.
         - If the customer says that the product was delivered already, call function productDelivery to update the order status.
         - If user asks for an updated order ask about new shoe preference. Be sure to ask about size, fit, color and type.
+        - If user asks for escalating the call to a manager or an agent, call function escalateToAgent.
         - Ask for clarification if a user request is ambiguous. 
         - Speak out all prices to include the currency. 
         - Once you know which model they would like proceed with the purchase.

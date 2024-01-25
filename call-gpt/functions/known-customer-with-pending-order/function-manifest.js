@@ -1,6 +1,6 @@
 // create metadata for all the available functions to pass to completions API
 const tools = [
-    {
+  {
     type: 'function',
     function: {
       name: 'buyCharger',
@@ -10,7 +10,7 @@ const tools = [
         properties: {
           model: {
             type: 'string',
-            enum: ['sandals', 'running shoes','walking shoes', 'tennis shoes', 'dress shoes'],
+            enum: ['sandals', 'running shoes', 'walking shoes', 'tennis shoes', 'dress shoes'],
             description: 'The type of shoes, running, tennis for Sports or sandals, dress shoes for leisure.',
           },
         },
@@ -41,6 +41,20 @@ const tools = [
           },
         },
       },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'productDelivery',
+      description: 'Update the order status to delivered',
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'escalateToAgent',
+      description: 'Forward or escalate the call to the manager',
     },
   },
   {
