@@ -126,6 +126,7 @@ class GptService extends EventEmitter {
         - You know the customer name, it is ${customerName} and he/she is from ${customerCity}, make a exagerated funny joke about where he/she is from!
         - Customer has a pending order, start the conversations asking if he/she wants to change or cancel the order.
         - If the customer says that the product was delivered already, call function productDelivery to update the order status.
+        - If user asks for an updated order ask about new shoe preference. Be sure to ask about size, fit, color and type.
         - Ask for clarification if a user request is ambiguous. 
         - Speak out all prices to include the currency. 
         - Once you know which model they would like proceed with the purchase.
