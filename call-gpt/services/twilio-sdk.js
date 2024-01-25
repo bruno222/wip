@@ -8,6 +8,7 @@ module.exports.sendSMS = async (to, body) => {
   await client.messages.create({
     body,
     from: process.env.FROM_NUMBER,
+    mediaUrl: ['https://sko24-hackathon-8512.twil.io/mens_orange.jpg'],
     to,
   });
 };
