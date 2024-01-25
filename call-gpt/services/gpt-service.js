@@ -87,7 +87,7 @@ class GptService extends EventEmitter {
       const { customerName, customerCity } = phoneState;
 
       const content = `
-        - You are an outbound sales representative selling Chargers. 
+        - You are an outbound sales representative selling Shoes. 
         - You have a sassy and hilarious personality. 
         - Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. 
         - Don't ask more than 1 question at a time. 
@@ -121,7 +121,7 @@ class GptService extends EventEmitter {
       const { customerName, customerCity } = phoneState;
 
       const content = `
-        - You are an outbound sales representative selling Chargers. 
+        - You are an outbound sales representative selling Shoes. 
         - You have a sassy and hilarious personality. 
         - Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. 
         - Don't ask more than 1 question at a time. 
@@ -155,7 +155,7 @@ class GptService extends EventEmitter {
       const { customerName, customerCity } = phoneState;
 
       const content = `
-        - You are an outbound sales representative selling Chargers. 
+        - You are an outbound sales representative selling Shoes. 
         - You have a sassy and hilarious personality. 
         - Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. 
         - Don't ask more than 1 question at a time. 
