@@ -6,7 +6,14 @@ The current challenge is that the world is not yet ready for Virtual Agents to c
 
 The solution is to **SYNERGIZE YOUR AI**. Combine the best of AI with the intellect of humans.
 
+## Architectural Overview
+
+The below is an overview of the various services involved as well as the order of operations.
+
 ![Basic Overview](https://raw.githubusercontent.com/bruno222/wip/main/docs/images/basic_overview.png)
+
+## Operating at Capacity
+Below is what it could look like a with a fully trained agent simultaneously supporting 5+ conversations happening with the AI Assistant.
 
 ![Operating at Capacity](https://raw.githubusercontent.com/bruno222/wip/main/docs/images/enhanced.png)
 
@@ -14,18 +21,35 @@ The solution is to **SYNERGIZE YOUR AI**. Combine the best of AI with the intell
 With this project, your Agents (real human beings) can:
 
 - Monitor multiple calls in real-time between your Customers and the Virtual Agents.
-- Hijack a call if they observe that the Virtual Agent is not responding correctly due to Hallucination problems.
+- Hijack/take over a call if they observe that the Virtual Agent is not responding correctly due to Hallucination problems.
 - Send hints to the Voice Bot via text message in real-time to adjust and correct the direction of the conversations with the Voice Bot.
 
-**Disclaimer**: This is a hackathon project built in ~4 days and is not production-ready.
+## Built-in Scenarios
+
+**TODO** dive into the various situations that a caller can run into:
+- new user / unknown user
+- known user with existing order
+-
+
+## Built-in features
+
+**TODO** highlight the functionality this repository provides today:
+- sending SMS to confirm product selection
+- ability for agent to monitor live transcripts
+- ability for agent to enhance and modify existing context
+- ability for agent to take control off the call, relieving the AI where necessary.
+- send email with order confirmation details
+
+
+**Disclaimer**: This is a hackathon project built in ~4 days and is not production-ready. Use at your own risk.
 
 ## Installing
 
 To set up the project, you need to install at least 2 out of the 4 assets:
 
-- [**mandatory**] Ngrok - CLI tool to expose your computer so Twilio can send the Media Stream to your Node.js project.
+- [**mandatory**] ngrok - CLI tool to expose your computer so Twilio can send the Media Stream to your Node.js project.
 
-- [**mandatory**] The Node.js project (back-end) - the core of the project.
+- [**mandatory**] The Node.js project (back-end) - the core of the project. This can be hosted locally or on a cloud service such as AWS EC2 or other comparable providers.
 
 - [**optional**] The Next.js project (front-end) - only necessary if you need to modify the HTML; otherwise, the back-end has a static version of the front-end within the /front-end/out folder.
 
@@ -67,4 +91,4 @@ To set up the project, you need to install at least 2 out of the 4 assets:
 7. Once **step 6** is finished, it will show the next steps; you will have to run the command mentioned there (something like `twilio flex:plugins:release ... etc etc`).
 8. We are done! Go to https://flex.twilio.com - You should see your `back-end` project being loaded into Panel2 of Flex (loading the URL `http://localhost:3000` which is the URL of the back-end).
 
-Happy Hacking!
+Happy Hacking! We can't wait to see what you build.
