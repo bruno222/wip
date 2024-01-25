@@ -6,9 +6,10 @@ The current challenge is that the world is not yet ready for Virtual Agents to c
 
 The solution is to **SYNERGIZE YOUR AI**. Combine the best of AI with the intellect of humans.
 
-[!Screenshot](docs/images/basic_overview.png)
+[!Basic Overview](https://raw.githubusercontent.com/bruno222/wip/main/docs/images/basic_overview.png)
 
-[!Screenshot](docs/images/enhanced.png)
+[!Operating at Capacity](https://raw.githubusercontent.com/bruno222/wip/main/docs/images/enhanced.png)
+
 
 With this project, your Agents (real human beings) can:
 
