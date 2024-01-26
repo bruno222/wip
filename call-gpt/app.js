@@ -130,7 +130,7 @@ app.ws('/connection/:CallSid', (ws, req) => {
       streamSid = msg.start.streamSid;
 
       if (!isCustomerKnown) {
-        const text = "Hello! I understand you're looking for a pair of AirPods, is that correct?";
+        const text = "Hello! I understand you're looking for a new pair of shoes, is that correct?";
         feSendMessage(CallSid, 'Bot', text);
         ttsService.generate({ partialResponseIndex: null, partialResponse: text }, 1);
       } else {
