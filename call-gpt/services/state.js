@@ -16,6 +16,11 @@ module.exports.deleteCall = (CallSid) => {
 module.exports.addCall = (CallSid, call) => {
   module.exports.currentCalls[CallSid] = call;
 };
+module.exports.getAllCalls = () => {
+  const currentCalls = [];
+  Object.keys(module.exports.currentCalls).map((CallSid) => currentCalls.push(module.exports.currentCalls[CallSid]));
+  return currentCalls;
+};
 
 //
 // Phone State

@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { getCall, getPhoneState } = require('./services/state');
+const { getCall, getPhoneState, getAllCalls } = require('./services/state');
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -31,6 +31,8 @@ wss.on('connection', (ws) => {
 
   ws.send(JSON.stringify({ type: 'front-end-connected' }));
 
+  //feSendCommand('call-started', { ...currentCall, gptService: null });
+
   //   ws.timer = setInterval(() => {
   //     console.log(`Sending message to ${ws.id}...`);
 
@@ -45,6 +47,15 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     console.log(`Received message: ${message}`);
     const { type, text, CallSid } = JSON.parse(message);
+
+    //
+    // When front-end just connected, it asks the backend for the current calls
+    //
+    if (type === 'give-me-all-current-calls') {
+      getAllCalls().map((currentCall) => {
+        feSendCommand('call-started', { ...currentCall, gptService: null });
+      });
+    }
 
     //
     // Supervisor sent a hint message

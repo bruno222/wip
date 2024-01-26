@@ -113,7 +113,9 @@ export default function Home() {
       // Front End Connected to the Back End
       //
       if (message.type === 'front-end-connected') {
+        console.log('@@@ front-end-connected');
         setStatus('connected');
+        sendCommandSocket('0')('give-me-all-current-calls');
         return;
       }
     };
@@ -137,13 +139,7 @@ export default function Home() {
 
   return (
     <div className='flex flex-row h-screen'>
-      <RenderChat 
-        messages={messagesOne} 
-        color={'red'} 
-        status={status} 
-        sendCommandSocket={sendCommandSocket('1')} 
-        CallSid={chatWindow[1]} 
-      />
+      <RenderChat messages={messagesOne} color={'red'} status={status} sendCommandSocket={sendCommandSocket('1')} CallSid={chatWindow[1]} />
       <RenderChat
         messages={messagesTwo}
         color={'blue'}
@@ -169,6 +165,7 @@ function RenderChat({
   CallSid: undefined | string;
 }) {
   const [text, setText] = useState<string>('connecting...');
+  const [placeHolder, setPlaceHolder] = useState<string>('connecting...');
   // const [bgColor, setBgColor] = useState<string>('bg-gray-300');
 
   if (status === 'connected' && !CallSid) {
@@ -180,7 +177,8 @@ function RenderChat({
 
   useEffect(() => {
     console.log('status changed', status);
-    status === 'connected' ? setText('') : setText(status);
+    setText('');
+    status === 'connected' ? setPlaceHolder('Send a hint') : setPlaceHolder(status);
   }, [status]);
 
   function sendMessage() {
@@ -237,28 +235,35 @@ function RenderChat({
     //   </div>
     // </div>
     <div className='flex-1 bg-indigo-100 flex flex-col justify-between p-4 space-y-4'>
-  <div id='chat' className='p-4 rounded shadow overflow-auto bg-indigo-200'>
-    {messages.map((message, index) => (
-      <ChatMessage key={index} {...message} />
-    ))}
-  </div>
+      <div id='chat' className='p-4 rounded shadow overflow-auto bg-indigo-200'>
+        {messages.map((message, index) => (
+          <ChatMessage key={index} {...message} />
+        ))}
+      </div>
 
-  <div id='textbox' className={`mt-auto flex justify-end items-center space-x-2 bg-${color}-600 p-2 rounded-lg`}>
-    <textarea
-      className={`flex-1 ${bgColor} rounded-lg`}
-      rows={2}
-      value={text}
-      onChange={(e) => setText(e.target.value)}
-      onKeyDown={handleKeyPress}
-      disabled={isDisabled}
-    />
-    <button className='px-4 py-2 bg-red-500 text-white rounded shadow-md hover:bg-red-600 transition-colors duration-200' onClick={sendMessage}>
-      Send
-    </button>
-    <button className='px-4 py-2 bg-green-500 text-white rounded shadow-md hover:bg-green-600 transition-colors duration-200' onClick={hijackCall}>
-      Hijack
-    </button>
-  </div>
-</div>
+      <div id='textbox' className={`mt-auto flex justify-end items-center space-x-2 bg-${color}-600 p-2 rounded-lg`}>
+        <textarea
+          placeholder={placeHolder}
+          className={`flex-1 ${bgColor} rounded-lg`}
+          rows={2}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleKeyPress}
+          disabled={isDisabled}
+        />
+        <button
+          className='px-4 py-2 bg-red-500 text-white rounded shadow-md hover:bg-red-600 transition-colors duration-200'
+          onClick={sendMessage}
+        >
+          Send
+        </button>
+        <button
+          className='px-4 py-2 bg-green-500 text-white rounded shadow-md hover:bg-green-600 transition-colors duration-200'
+          onClick={hijackCall}
+        >
+          Hijack
+        </button>
+      </div>
+    </div>
   );
 }
