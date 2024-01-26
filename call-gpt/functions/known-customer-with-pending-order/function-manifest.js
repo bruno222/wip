@@ -61,7 +61,7 @@ const tools = [
     type: 'function',
     function: {
       name: 'askSupervisorHelp',
-      description: 'Ask help for the Supervisor when in doubt',
+      description: 'Ask help for the Supervisor for any question you dont know the answer.',
     },
   },
   {
