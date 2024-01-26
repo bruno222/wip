@@ -209,31 +209,6 @@ function RenderChat({
   }
 
   return (
-    // <div className={`flex-1 bg-${color}-200 flex flex-col justify-between`}>
-    // <div className='flex-1 bg-green-200 flex flex-col justify-between'>
-    //   <div id='chat' className='p-4 rounded shadow overflow-auto'>
-    //     {messages.map((message, index) => (
-    //       <ChatMessage key={index} {...message} />
-    //     ))}
-    //   </div>
-
-    //   <div id='textbox' className={`flex justify-end items-center space-x-2 bg-${color}-500 p-2`}>
-    //     <textarea
-    //       className={`flex-1 ${bgColor}`}
-    //       rows={3}
-    //       value={text}
-    //       onChange={(e) => setText(e.target.value)}
-    //       onKeyDown={handleKeyPress}
-    //       disabled={isDisabled}
-    //     />
-    //     <button className='px-4 py-3 bg-green-500 text-white' onClick={sendMessage}>
-    //       Send
-    //     </button>
-    //     <button className='px-4 py-3 bg-yellow-500 text-white' onClick={hijackCall}>
-    //       Hijack
-    //     </button>
-    //   </div>
-    // </div>
     <div className='flex-1 bg-indigo-100 flex flex-col justify-between p-4 space-y-4'>
       <div id='chat' className='p-4 rounded shadow overflow-auto bg-indigo-200'>
         {messages.map((message, index) => (
