@@ -60,6 +60,13 @@ const tools = [
   {
     type: 'function',
     function: {
+      name: 'askSupervisorHelp',
+      description: 'Ask help for the Supervisor for any question you dont know the answer.',
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'productDelivery',
       description: 'Update the order status to delivered',
     },

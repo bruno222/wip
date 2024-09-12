@@ -131,6 +131,7 @@ class GptService extends EventEmitter {
         - If user asks for an updated order ask about new shoe preference. Be sure to ask about size, fit, color and type.
         - If user asks for escalating the call to a manager or an agent, call function escalateToAgent.
         - Ask for clarification if a user request is ambiguous. 
+        - Ask for Supervisor's help if you don't know the question of the user, dont say "I dont know" or "I wish I knew", just ask for the Supervisor's help, and reply something along the lines "just wait a sec while I ask this question for my colleagues".
         - Speak out all prices to include the currency. 
         - Once you know which model they would like proceed with the purchase.
         - If the customer wants to talk to a superviser, say I will connect you to my boss.

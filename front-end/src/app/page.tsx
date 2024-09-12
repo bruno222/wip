@@ -27,6 +27,7 @@ export default function Home() {
 
   const [status, setStatus] = useState<string>('disconnected');
   const [chatWindow, setChatWindow] = useState<{ [chatId: string]: undefined | string }>({ '1': undefined, '2': undefined });
+  const [handsRaised, setHandsRaised] = useState('');
 
   const socketRef = useRef<WebSocket | null>(null);
 
@@ -57,6 +58,11 @@ export default function Home() {
 
       if (type === 'hijack-call') {
         addMessage(callId, { sender: 'System', text: `Forwarding the call to you...` });
+      }
+
+      if (type === 'new-msg-from-supervisor' && text !== '') {
+        setHandsRaised((prev) => prev.replace(`|${callId}|`, '').replace('||', '|')); // outputs |1| or |1|2|
+        callId;
       }
     };
 
@@ -118,6 +124,15 @@ export default function Home() {
         sendCommandSocket('0')('give-me-all-current-calls');
         return;
       }
+
+      //
+      // Virtual Agent wants the help of the Supervisor
+      //
+      if (message.type === 'raise-hand') {
+        const { callId } = message;
+        setHandsRaised((prev) => `${prev}|${callId}|`.replace('||', '|')); // outputs |1| or |1|2|
+        return;
+      }
     };
 
     socket.onclose = (event) => {
@@ -139,13 +154,21 @@ export default function Home() {
 
   return (
     <div className='flex flex-row h-screen'>
-      <RenderChat messages={messagesOne} color={'red'} status={status} sendCommandSocket={sendCommandSocket('1')} CallSid={chatWindow[1]} />
+      <RenderChat
+        messages={messagesOne}
+        color={'red'}
+        status={status}
+        sendCommandSocket={sendCommandSocket('1')}
+        CallSid={chatWindow[1]}
+        isHandRaised={handsRaised.includes('1')}
+      />
       <RenderChat
         messages={messagesTwo}
         color={'blue'}
         status={status}
         sendCommandSocket={sendCommandSocket('2')}
         CallSid={chatWindow[2]}
+        isHandRaised={handsRaised.includes('2')}
       />
     </div>
   );
@@ -157,12 +180,14 @@ function RenderChat({
   status,
   sendCommandSocket,
   CallSid,
+  isHandRaised,
 }: {
   messages: Message[];
   color: string;
   status: string;
   sendCommandSocket: Function;
   CallSid: undefined | string;
+  isHandRaised: boolean;
 }) {
   const [text, setText] = useState<string>('connecting...');
   const [placeHolder, setPlaceHolder] = useState<string>('connecting...');
@@ -208,39 +233,26 @@ function RenderChat({
     }
   }
 
-  return (
-    // <div className={`flex-1 bg-${color}-200 flex flex-col justify-between`}>
-    // <div className='flex-1 bg-green-200 flex flex-col justify-between'>
-    //   <div id='chat' className='p-4 rounded shadow overflow-auto'>
-    //     {messages.map((message, index) => (
-    //       <ChatMessage key={index} {...message} />
-    //     ))}
-    //   </div>
+  function showRaisedHand() {
+    if (!isHandRaised) {
+      return;
+    }
 
-    //   <div id='textbox' className={`flex justify-end items-center space-x-2 bg-${color}-500 p-2`}>
-    //     <textarea
-    //       className={`flex-1 ${bgColor}`}
-    //       rows={3}
-    //       value={text}
-    //       onChange={(e) => setText(e.target.value)}
-    //       onKeyDown={handleKeyPress}
-    //       disabled={isDisabled}
-    //     />
-    //     <button className='px-4 py-3 bg-green-500 text-white' onClick={sendMessage}>
-    //       Send
-    //     </button>
-    //     <button className='px-4 py-3 bg-yellow-500 text-white' onClick={hijackCall}>
-    //       Hijack
-    //     </button>
-    //   </div>
-    // </div>
+    return (
+      <div className='flex-1 bg-indigo-100 flex flex-col justify-between p-4 space-y-4 items-center'>
+        <img src='/raise-hand.png' width='200px' />
+      </div>
+    );
+  }
+
+  return (
     <div className='flex-1 bg-indigo-100 flex flex-col justify-between p-4 space-y-4'>
       <div id='chat' className='p-4 rounded shadow overflow-auto bg-indigo-200'>
         {messages.map((message, index) => (
           <ChatMessage key={index} {...message} />
         ))}
       </div>
-
+      {showRaisedHand()}
       <div id='textbox' className={`mt-auto flex justify-end items-center space-x-2 bg-${color}-600 p-2 rounded-lg`}>
         <textarea
           placeholder={placeHolder}
